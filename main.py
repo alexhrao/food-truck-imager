@@ -24,7 +24,7 @@ def upload_coc(img_filename, bucket_name):
 def take_snapshot(cam, bucket, config):
     if cam is not None and cam.isOpened():
         _, frame = cam.read()
-        if (len(config['transformations']) > 0):
+        if (len(config['transforms']) > 0):
             # for now just flip
             frame = cv2.flip(frame, 0)
         cv2.imwrite('./{0}.png'.format(bucket), frame)
