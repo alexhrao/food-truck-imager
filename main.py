@@ -10,9 +10,9 @@ def parse_config(config):
         conf = json.load(fd)
     return conf
 
-def upload_coc(img_filename):
+def upload_coc(img_filename, bucket):
     storage_client = storage.Client()
-    bucket = storage_client.bucket('cocfoodtrucks')
+    bucket = storage_client.bucket(bucket)
     img_name = datetime.now().isoformat().replace('-', '_').replace(':', '_').replace('.', '_')
     blob = bucket.blob(img_name)
     blob.upload_from_filename(img_filename)
@@ -21,7 +21,7 @@ def take_snapshot(cam, bucket):
     if cam is not None and cam.isOpened():
         _, frame = cam.read()
         cv2.imwrite('./{0}.png'.format(bucket), frame)
-        upload_coc('./{0}.png'.format(bucket))
+        upload_coc('./{0}.png'.format(bucket), bucket)
         Timer(3.0, take_snapshot, args=[cam, c['bucket']]).start()
 
 if __name__=="__main__":
