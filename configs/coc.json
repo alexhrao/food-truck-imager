@@ -2,11 +2,18 @@
     {
         "index": 1,
         "bucket": "coc-main-food-trucks",
-        "interval": 30.0
+        "interval": 30.0,
+        "transformations": []
     },
     {
         "index": 2,
         "bucket": "coc-walkway-food-trucks",
-        "interval": 30.0
+        "interval": 30.0,
+        "transformations": [
+            {
+                "action": "flip",
+                "axis": "x"
+            }
+        ]
     }
 ]

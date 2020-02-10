@@ -21,12 +21,15 @@ def upload_coc(img_filename, bucket_name):
     doc_ref = db.collection(u'last-view').document(bucket_name)
     doc_ref.update({ 'filename': img_name, 'time_updated': firestore.SERVER_TIMESTAMP })
 
-def take_snapshot(cam, bucket, interval):
+def take_snapshot(cam, bucket, config):
     if cam is not None and cam.isOpened():
         _, frame = cam.read()
+        if (len(config['transformations']) > 0):
+            # for now just flip
+            frame = cv2.flip(frame, 0)
         cv2.imwrite('./{0}.png'.format(bucket), frame)
         upload_coc('./{0}.png'.format(bucket), bucket)
-        Timer(interval, take_snapshot, args=[cam, bucket, interval]).start()
+        Timer(config['interval'], take_snapshot, args=[cam, bucket, config]).start()
 
 if __name__=="__main__":
     conf = parse_config(sys.argv[1])
@@ -35,7 +38,7 @@ if __name__=="__main__":
     for c in conf:
         cam = cv2.VideoCapture(c['index'])
         cams.append(cam)
-        ticker = Timer(c['interval'], take_snapshot, args=[cam, c['bucket'], c['interval']])
+        ticker = Timer(c['interval'], take_snapshot, args=[cam, c['bucket'], { 'interval': c['interval'], 'transforms': c['transformations'] }])
         tickers.append(ticker)
     for ticker in tickers:
         ticker.start()
