@@ -20,8 +20,8 @@ def upload_coc(img_filename):
 def take_snapshot(cam, bucket):
     if cam is not None and cam.isOpened():
         _, frame = cam.read()
-        cv2.imwrite('./tmp.png', frame)
-        upload_coc('./tmp.png')
+        cv2.imwrite('./{0}.png'.format(bucket), frame)
+        upload_coc('./{0}.png'.format(bucket))
         Timer(3.0, take_snapshot, args=[cam, c['bucket']]).start()
 
 if __name__=="__main__":
