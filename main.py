@@ -12,13 +12,13 @@ def parse_config(config):
         conf = json.load(fd)
     return conf
 
-def upload_coc(img_filename, bucket):
+def upload_coc(img_filename, bucket_name):
     storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket)
+    bucket = storage_client.bucket(bucket_name)
     img_name = '{0}.png'.format(datetime.now().isoformat().replace('-', '_').replace(':', '_').replace('.', '_'))
     blob = bucket.blob(img_name)
     blob.upload_from_filename(img_filename)
-    doc_ref = db.collection(u'last-view').document(bucket)
+    doc_ref = db.collection(u'last-view').document(bucket_name)
     doc_ref.update({ 'filename': img_name, 'time_updated': firestore.SERVER_TIMESTAMP })
 
 def take_snapshot(cam, bucket, interval):
