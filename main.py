@@ -6,6 +6,7 @@ import json
 import sys
 
 db = firestore.Client()
+dt_range = [11, 14]
 
 def parse_config(config):
     with open(config) as fd:
@@ -23,24 +24,26 @@ def upload_coc(img_filename, bucket_name):
 
 def take_snapshot(cam, bucket, config):
     if cam is not None and cam.isOpened():
-        _, frame = cam.read()
-        for transform in config['transformations']:
-            if transform['action'] == 'flip':
-                if transform['axis'] == 'x':
-                    frame = cv2.flip(frame, 0)
-                elif transform['axis'] == 'y':
-                    frame = cv2.flip(frame, 1)
-                elif transform['axis'] == 'xy':
-                    frame = cv2.flip(frame, -1)
-            elif transform['action'] == 'rotate':
-                if transform['direction'] == 'CW90':
-                    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
-                elif transform['direction'] == 'CCW90':
-                    frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
-                elif transform['direction'] == '180':
-                    frame = cv2.rotate(frame, cv2.ROTATE_180)
-        cv2.imwrite('./{0}.png'.format(bucket), frame)
-        upload_coc('./{0}.png'.format(bucket), bucket)
+        dt = datetime.now()
+        if (dt.hour >= dt_range[0]) & (dt.hour <= dt_range[1]):
+            _, frame = cam.read()
+            for transform in config['transformations']:
+                if transform['action'] == 'flip':
+                    if transform['axis'] == 'x':
+                        frame = cv2.flip(frame, 0)
+                    elif transform['axis'] == 'y':
+                        frame = cv2.flip(frame, 1)
+                    elif transform['axis'] == 'xy':
+                        frame = cv2.flip(frame, -1)
+                elif transform['action'] == 'rotate':
+                    if transform['direction'] == 'CW90':
+                        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+                    elif transform['direction'] == 'CCW90':
+                        frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                    elif transform['direction'] == '180':
+                        frame = cv2.rotate(frame, cv2.ROTATE_180)
+            cv2.imwrite('./{0}.png'.format(bucket), frame)
+            upload_coc('./{0}.png'.format(bucket), bucket)
         Timer(config['interval'], take_snapshot, args=[cam, bucket, config]).start()
 
 if __name__=="__main__":
