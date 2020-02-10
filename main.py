@@ -24,9 +24,21 @@ def upload_coc(img_filename, bucket_name):
 def take_snapshot(cam, bucket, config):
     if cam is not None and cam.isOpened():
         _, frame = cam.read()
-        if (len(config['transforms']) > 0):
-            # for now just flip
-            frame = cv2.flip(frame, 0)
+        for transform in config['transformations']:
+            if transform['action'] == 'flip':
+                if transform['axis'] == 'x':
+                    frame = cv2.flip(frame, 0)
+                elif transform['axis'] == 'y':
+                    frame = cv2.flip(frame, 1)
+                elif transform['axis'] == 'xy':
+                    frame = cv2.flip(frame, -1)
+            elif transform['action'] == 'rotate':
+                if transform['direction'] == 'CW90':
+                    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+                elif transform['direction'] == 'CCW90':
+                    frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                elif transform['direction'] == '180':
+                    frame = cv2.rotate(frame, cv2.ROTATE_180)
         cv2.imwrite('./{0}.png'.format(bucket), frame)
         upload_coc('./{0}.png'.format(bucket), bucket)
         Timer(config['interval'], take_snapshot, args=[cam, bucket, config]).start()
@@ -38,7 +50,7 @@ if __name__=="__main__":
     for c in conf:
         cam = cv2.VideoCapture(c['index'])
         cams.append(cam)
-        ticker = Timer(c['interval'], take_snapshot, args=[cam, c['bucket'], { 'interval': c['interval'], 'transforms': c['transformations'] }])
+        ticker = Timer(c['interval'], take_snapshot, args=[cam, c['bucket'], { 'interval': c['interval'], 'transformations': c['transformations'] }])
         tickers.append(ticker)
     for ticker in tickers:
         ticker.start()
