@@ -1,3 +1,4 @@
 venv/*
 gcloudcredentials.json
 tmp.png
+.DS_Store
