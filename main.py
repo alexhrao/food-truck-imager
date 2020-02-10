@@ -22,7 +22,7 @@ def take_snapshot(cam, bucket):
         _, frame = cam.read()
         cv2.imwrite('./tmp.png', frame)
         upload_coc('./tmp.png')
-        Timer(3.0, take_snapshot, cam, bucket).start()
+        Timer(3.0, take_snapshot, args=[cam, c['bucket']]).start()
 
 if __name__=="__main__":
     conf = parse_config(sys.argv[1])
@@ -31,7 +31,7 @@ if __name__=="__main__":
     for c in conf:
         cam = cv2.VideoCapture(c['index'])
         cams.append(cam)
-        ticker = Timer(3.0, take_snapshot, cam, c['bucket'])
+        ticker = Timer(3.0, take_snapshot, args=[cam, c['bucket']])
         tickers.append(ticker)
     for ticker in tickers:
         ticker.start()
