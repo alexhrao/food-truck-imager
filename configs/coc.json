@@ -1,10 +1,12 @@
 [
     {
         "index": 1,
-        "bucket": "coc-main-food-trucks"
+        "bucket": "coc-main-food-trucks",
+        "interval": 30.0
     },
     {
         "index": 2,
-        "bucket": "coc-walkway-food-trucks"
+        "bucket": "coc-walkway-food-trucks",
+        "interval": 30.0
     }
 ]
