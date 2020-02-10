@@ -22,7 +22,7 @@ def take_snapshot(cam, bucket, interval):
         _, frame = cam.read()
         cv2.imwrite('./{0}.png'.format(bucket), frame)
         upload_coc('./{0}.png'.format(bucket), bucket)
-        Timer(interval, take_snapshot, args=[cam, c['bucket'], interval]).start()
+        Timer(interval, take_snapshot, args=[cam, bucket, interval]).start()
 
 if __name__=="__main__":
     conf = parse_config(sys.argv[1])
