@@ -35,7 +35,6 @@ if __name__=="__main__":
         tickers.append(ticker)
     for ticker in tickers:
         ticker.start()
-    flag = True
     while True:
         print("Press q to quit...", end=" ")
         ctrl = input()
