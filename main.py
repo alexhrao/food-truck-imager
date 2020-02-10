@@ -29,9 +29,9 @@ if __name__=="__main__":
     cams = list()
     tickers = list()
     for c in conf:
-        cam = cv2.VideoCapture(c.index)
+        cam = cv2.VideoCapture(c['index'])
         cams.append(cam)
-        ticker = Timer(3.0, take_snapshot, cam, c.bucket)
+        ticker = Timer(3.0, take_snapshot, cam, c['bucket'])
         tickers.append(ticker)
     for ticker in tickers:
         ticker.start()
