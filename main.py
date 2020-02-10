@@ -1,9 +1,11 @@
-from google.cloud import storage
+from google.cloud import storage, firestore
 from datetime import datetime
 from cv2 import cv2
 from threading import Timer
 import json
 import sys
+
+db = firestore.Client()
 
 def parse_config(config):
     with open(config) as fd:
@@ -13,9 +15,11 @@ def parse_config(config):
 def upload_coc(img_filename, bucket):
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket)
-    img_name = datetime.now().isoformat().replace('-', '_').replace(':', '_').replace('.', '_')
+    img_name = '{0}.png'.format(datetime.now().isoformat().replace('-', '_').replace(':', '_').replace('.', '_'))
     blob = bucket.blob(img_name)
     blob.upload_from_filename(img_filename)
+    doc_ref = db.collection(u'last-view').document(bucket)
+    doc_ref.update({ 'filename': img_name, 'time_updated': firestore.SERVER_TIMESTAMP })
 
 def take_snapshot(cam, bucket, interval):
     if cam is not None and cam.isOpened():
