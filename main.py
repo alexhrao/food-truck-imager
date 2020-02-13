@@ -16,11 +16,21 @@ def parse_config(config):
 def upload_coc(img_filename, bucket_name):
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
-    img_name = '{0}.png'.format(datetime.now().isoformat().replace('-', '_').replace(':', '_').replace('.', '_'))
+    img_id = datetime.now().isoformat().replace('-', '_').replace(':', '_').replace('.', '_')
+    img_name = '{0}.png'.format(img_id)
     blob = bucket.blob(img_name)
     blob.upload_from_filename(img_filename)
-    doc_ref = db.collection(u'last-view').document(bucket_name)
-    doc_ref.update({ 'filename': img_name, 'time_updated': firestore.SERVER_TIMESTAMP })
+    doc_ref = db.collection('images').document(bucket_name)
+    doc_ref.update({ 'lastSnapshot.filename': img_name, 'lastSnapshot.updateTime': firestore.SERVER_TIMESTAMP })
+    coll_ref = db.collection('images').document(bucket_name).collection('labels')
+    doc = coll_ref.document(img_id)
+    doc.set({
+        'bucket': bucket_name,
+        'filename': img_name,
+        'labels': [],
+        'valid': True,
+        'seen': False
+    })
 
 def take_snapshot(cam, bucket, config):
     if cam is not None and cam.isOpened():
