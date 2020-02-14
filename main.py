@@ -64,7 +64,7 @@ def take_snapshot(cam, bucket, config):
         cv2.imwrite('./{0}.png'.format(bucket), frame)
         upload_coc('./{0}.png'.format(bucket), bucket)
         dt = datetime.now()
-        if (dt.hour >= dt_range[0]) & (dt.hour <= dt_range[1]):
+        if (dt.hour < dt_range[0]) | (dt.hour > dt_range[1]):
             ticker = Timer(30.0 * 60.0, take_snapshot, args=[cam, bucket, config])
         else:
             ticker = Timer(config['interval'], take_snapshot, args=[cam, bucket, config])
