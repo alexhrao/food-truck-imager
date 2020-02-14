@@ -5,6 +5,7 @@ from threading import Timer
 import json
 import sys
 import socket
+import time
 
 db = firestore.Client()
 dt_range = [11, 14]
@@ -75,7 +76,12 @@ if __name__=="__main__":
     cams = list()
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('localhost', 10000))
+    while True:
+        try:
+            server.bind(('localhost', 10000))
+            break
+        except OSError as ex:
+            time.sleep(1.0)
     for i, c in enumerate(conf):
         cam = cv2.VideoCapture(c['index'])
         cams.append(cam)
