@@ -4,14 +4,24 @@ from cv2 import cv2
 from threading import Timer
 import json
 import sys
+import socket
 
 db = firestore.Client()
 dt_range = [11, 14]
+tickers = list()
 
-def parse_config(config):
-    with open(config) as fd:
-        conf = json.load(fd)
-    return conf
+def parse_config(location):
+    loc_config = db.collection('locations').document(location).get().to_dict()
+    out = list()
+    for view in loc_config['views']:
+        conf = {
+            'bucket': view['bucket'],
+            'index': view['cameraConfig']['index'],
+            'interval': view['cameraConfig']['interval'],
+            'transformations': view['cameraConfig']['transformations']
+        }
+        out.append(conf)
+    return out
 
 def upload_coc(img_filename, bucket_name):
     storage_client = storage.Client()
@@ -54,26 +64,30 @@ def take_snapshot(cam, bucket, config):
         upload_coc('./{0}.png'.format(bucket), bucket)
         dt = datetime.now()
         if (dt.hour >= dt_range[0]) & (dt.hour <= dt_range[1]):
-            Timer(30.0 * 60.0, take_snapshot, args=[cam, bucket, config]).start()
+            ticker = Timer(30.0 * 60.0, take_snapshot, args=[cam, bucket, config])
         else:
-            Timer(config['interval'], take_snapshot, args=[cam, bucket, config]).start()
+            ticker = Timer(config['interval'], take_snapshot, args=[cam, bucket, config])
+        tickers[config['index']] = ticker
+        ticker.start()
 
 if __name__=="__main__":
     conf = parse_config(sys.argv[1])
     cams = list()
-    tickers = list()
-    for c in conf:
+
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(('localhost', 10000))
+    for i, c in enumerate(conf):
         cam = cv2.VideoCapture(c['index'])
         cams.append(cam)
-        ticker = Timer(c['interval'], take_snapshot, args=[cam, c['bucket'], { 'interval': c['interval'], 'transformations': c['transformations'] }])
+        ticker = Timer(c['interval'], take_snapshot, args=[cam, c['bucket'], { 'interval': c['interval'], 'index': i, 'transformations': c['transformations'] }])
         tickers.append(ticker)
     for ticker in tickers:
         ticker.start()
-    while True:
-        print("Press q to quit...", end=" ")
-        ctrl = input()
-        if (ctrl == 'q'):
-            break
+    server.listen(1)
+    print('listening for command...')
+    conn, cl_addr = server.accept()
     for cam in cams:
         cam.release()
     cv2.destroyAllWindows()
+    for ticker in tickers:
+        ticker.cancel()
