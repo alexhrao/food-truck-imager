@@ -74,7 +74,6 @@ def take_snapshot(cam, bucket, config):
 if __name__=="__main__":
     conf = parse_config(sys.argv[1])
     cams = list()
-
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while True:
         try:
